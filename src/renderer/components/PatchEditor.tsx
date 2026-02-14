@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { useStore } from "../store";
 import { SysExParser } from "../../shared/SysExParser";
 import ParameterControl from "./ParameterControl";
@@ -5,6 +6,16 @@ import ParameterControl from "./ParameterControl";
 export default function PatchEditor() {
   const { currentPatch, updatePatchParameter, pushUndo, isConnected } =
     useStore();
+  const sendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (sendTimeoutRef.current) {
+        clearTimeout(sendTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (!currentPatch) {
     return (
@@ -28,9 +39,26 @@ export default function PatchEditor() {
 
     // Send parameter change to microKORG if connected
     if (isConnected) {
-      // This is simplified - would need to map path to microKORG parameter ID
-      // For now, we'll send the full patch after a delay
-      // TODO: Implement proper parameter mapping
+      // Clear any pending send to throttle rapid changes
+      if (sendTimeoutRef.current) {
+        clearTimeout(sendTimeoutRef.current);
+      }
+
+      // Send complete patch after 100ms delay (throttling)
+      sendTimeoutRef.current = setTimeout(async () => {
+        try {
+          // Get the updated patch from store
+          const updatedPatch = useStore.getState().currentPatch;
+          if (updatedPatch) {
+            const sysex = SysExParser.encodeSysEx(updatedPatch);
+            await window.electronAPI.midi.sendPatch(sysex);
+            console.log(`Sent parameter change: ${path} = ${value}`);
+          }
+        } catch (error) {
+          console.error("Failed to send parameter change:", error);
+          // Don't show alert - would be annoying during editing
+        }
+      }, 100);
     }
   };
 

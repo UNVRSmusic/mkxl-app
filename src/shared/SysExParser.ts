@@ -130,8 +130,8 @@ export class SysExParser {
    * Encode a MicroKorgPatch object into SysEx data
    */
   static encodeSysEx(patch: MicroKorgPatch, channel: number = 0): Uint8Array {
-    // If we already have sysex data, use it (with potential updates)
-    if (patch.sysexData) {
+    // If we already have valid sysex data, use it
+    if (patch.sysexData && patch.sysexData.length > 0) {
       return patch.sysexData;
     }
 
