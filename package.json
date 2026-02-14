@@ -1,0 +1,87 @@
+{
+  "name": "microkorg-enhanced-editor",
+  "version": "1.0.0",
+  "description": "Enhanced MIDI editor for Korg microKORG synthesizer with patch library, visualizations, and community sharing",
+  "main": "dist/main/main/main.js",
+  "author": "Your Name",
+  "license": "MIT",
+  "scripts": {
+    "start": "concurrently \"npm run build:main:watch\" \"npm run dev:renderer\" \"npm run electron:dev\"",
+    "dev": "npm start",
+    "dev:renderer": "node_modules/.bin/vite",
+    "build": "npm run build:main && npm run build:renderer",
+    "build:main": "node_modules/.bin/tsc -p tsconfig.main.json",
+    "build:main:watch": "node_modules/.bin/tsc -p tsconfig.main.json --watch",
+    "build:renderer": "node_modules/.bin/vite build",
+    "build:renderer:watch": "node_modules/.bin/vite build --watch",
+    "electron:dev": "wait-on http://localhost:3000 dist/main/main/main.js && NODE_ENV=development electron .",
+    "electron:build": "npm run build && electron-builder --mac --arm64",
+    "electron:build:all": "npm run build && electron-builder -mwl",
+    "type-check": "node_modules/.bin/tsc --noEmit",
+    "lint": "node_modules/.bin/eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "clsx": "^2.1.0",
+    "date-fns": "^3.3.1",
+    "easymidi": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sql.js": "^1.12.0",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/sql.js": "^1.4.9",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "electron": "^28.2.3",
+    "electron-builder": "^24.9.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.1",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.microkorg.editor",
+    "productName": "microKORG Enhanced Editor",
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": {
+        "target": "default",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
+      "category": "public.app-category.music",
+      "icon": "public/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "public/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Audio"
+    }
+  }
+}
